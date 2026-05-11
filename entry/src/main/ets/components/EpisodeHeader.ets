@@ -1,22 +1,31 @@
 @Component
 export struct EpisodeHeader {
-  @Prop podcast: string = '';
+  @Prop exampleLabel: string = '';
   @Prop title: string = '';
+  @Prop apiLabel: string = '';
 
   build() {
-    Column({ space: 4 }) {
-      Text(this.podcast)
-        .fontSize(11)
-        .fontColor('#7A8595')
+    Column({ space: 3 }) {
+      Text(this.exampleLabel)
+        .fontSize(9)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#1F6FEB')
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis });
 
       Text(this.title)
-        .fontSize(15)
+        .fontSize(10)
+        .fontColor('#7A8595')
+        .textAlign(TextAlign.Center)
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis });
+
+      Text(this.apiLabel)
+        .fontSize(12)
         .fontWeight(FontWeight.Medium)
         .fontColor('#0E1116')
         .textAlign(TextAlign.Center)
-        .maxLines(2)
+        .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis });
     }
     .width('100%')

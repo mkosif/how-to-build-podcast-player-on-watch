@@ -31,6 +31,7 @@ export class AudioPlayerService {
 
   private lastDurationMs: number = 0;
   private bufferDurationSec: number = AppConstants.URL_STREAM_BUFFER_WIFI_SEC;
+  private loadToken: number = 0;
 
   private systemListener: SystemEventListener = (event: string, _data: commonEventManager.CommonEventData) => {
     if (event === commonEventManager.Support.COMMON_EVENT_BATTERY_LOW) {
@@ -61,20 +62,30 @@ export class AudioPlayerService {
   }
 
   async load(episode: Episode): Promise<void> {
+    const token: number = this.nextLoadToken();
     await this.disposePlayer();
+    if (!this.isActiveToken(token)) {
+      return;
+    }
     this.currentEpisode = episode;
     this.lastDurationMs = episode.fallbackDurationSec * 1000;
     try {
       const player: media.AVPlayer = await media.createAVPlayer();
+      if (!this.isActiveToken(token)) {
+        await this.releaseStalePlayer(player);
+        return;
+      }
       this.avPlayer = player;
-      this.attachAvListeners(player);
+      this.attachAvListeners(player, token);
       if (episode.sourceType === EpisodeSourceType.Rawfile) {
         await this.applyRawfileSource(player, episode.source);
       } else {
         this.applyUrlSource(player, episode.source);
       }
     } catch (err) {
-      this.reportError('load', err);
+      if (this.isActiveToken(token)) {
+        this.reportError('load', err);
+      }
     }
   }
 
@@ -140,6 +151,7 @@ export class AudioPlayerService {
   }
 
   async release(): Promise<void> {
+    this.nextLoadToken();
     commonEventService.removeSystemListener(this.systemListener);
     await this.disposePlayer();
     this.stateListeners = [];
@@ -149,27 +161,35 @@ export class AudioPlayerService {
     this.currentEpisode = null;
   }
 
-  private attachAvListeners(player: media.AVPlayer): void {
+  private attachAvListeners(player: media.AVPlayer, token: number): void {
     player.on('stateChange', (state: string, _reason: media.StateChangeReason) => {
-      this.handleStateChange(state);
+      this.handleStateChange(player, token, state);
     });
     player.on('error', (err: BusinessError) => {
+      if (!this.isActivePlayer(player, token)) {
+        return;
+      }
       hilog.error(DOMAIN, TAG, 'AVPlayer error: %{public}s', JSON.stringify(err));
       this.fireError(err.message);
     });
     player.on('timeUpdate', (timeMs: number) => {
+      if (!this.isActivePlayer(player, token)) {
+        return;
+      }
       for (let i = 0; i < this.timeListeners.length; i++) {
         this.timeListeners[i](timeMs, this.lastDurationMs);
       }
     });
     player.on('endOfStream', () => {
+      if (!this.isActivePlayer(player, token)) {
+        return;
+      }
       this.handleEnded();
     });
   }
 
-  private async handleStateChange(state: string): Promise<void> {
-    const player: media.AVPlayer | null = this.avPlayer;
-    if (player === null) {
+  private async handleStateChange(player: media.AVPlayer, token: number, state: string): Promise<void> {
+    if (!this.isActivePlayer(player, token)) {
       return;
     }
     if (state === 'initialized') {
@@ -182,6 +202,9 @@ export class AudioPlayerService {
       if (player.duration > 0) {
         this.lastDurationMs = player.duration;
       }
+    }
+    if (!this.isActivePlayer(player, token)) {
+      return;
     }
     for (let i = 0; i < this.stateListeners.length; i++) {
       this.stateListeners[i](state);
@@ -226,6 +249,27 @@ export class AudioPlayerService {
     }
     this.avPlayer = null;
     this.lastDurationMs = 0;
+  }
+
+  private nextLoadToken(): number {
+    this.loadToken = this.loadToken + 1;
+    return this.loadToken;
+  }
+
+  private isActiveToken(token: number): boolean {
+    return token === this.loadToken;
+  }
+
+  private isActivePlayer(player: media.AVPlayer, token: number): boolean {
+    return this.isActiveToken(token) && this.avPlayer === player;
+  }
+
+  private async releaseStalePlayer(player: media.AVPlayer): Promise<void> {
+    try {
+      await player.release();
+    } catch (err) {
+      hilog.warn(DOMAIN, TAG, 'stale release failed: %{public}s', JSON.stringify(err));
+    }
   }
 
   private reportError(stage: string, err: Object): void {

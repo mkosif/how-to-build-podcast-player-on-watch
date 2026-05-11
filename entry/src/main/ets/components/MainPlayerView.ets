@@ -18,9 +18,11 @@ export struct MainPlayerView {
   @State durationMs: number = 0;
   @State isPlaying: boolean = false;
   @State isReady: boolean = false;
+  @State isLoading: boolean = false;
   @State artwork: image.PixelMap | null = null;
   @State displayTitle: string = '';
-  @State displayArtist: string = '';
+  private metadataToken: number = 0;
+  private pendingPlay: boolean = false;
 
   private stateListener: StateListener = (state: string) => {
     if (state === 'playing') {
@@ -31,12 +33,18 @@ export struct MainPlayerView {
       this.isReady = true;
     } else if (state === 'prepared') {
       this.isReady = true;
+      this.isLoading = false;
       this.durationMs = audioPlayerService.durationMs();
       this.refreshMetadata();
+      if (this.pendingPlay) {
+        this.pendingPlay = false;
+        audioPlayerService.play();
+      }
     } else if (state === 'completed') {
       this.isReady = true;
     } else if (state === 'error' || state === 'idle' || state === 'released') {
       this.isReady = false;
+      this.isLoading = false;
       this.isPlaying = false;
     }
   };
@@ -59,6 +67,7 @@ export struct MainPlayerView {
   private errorListener: ErrorListener = (_message: string) => {
     this.isPlaying = false;
     this.isReady = false;
+    this.isLoading = false;
     this.showToast('Audio unavailable');
   };
 
@@ -88,10 +97,12 @@ export struct MainPlayerView {
 
   build() {
     Column({ space: 4 }) {
+      this.episodeIndicator();
       this.artworkBlock();
       EpisodeHeader({
-        podcast: this.displayArtist.length > 0 ? this.displayArtist : this.currentEpisode().podcast,
-        title: this.displayTitle.length > 0 ? this.displayTitle : this.currentEpisode().title
+        exampleLabel: this.currentEpisode().exampleLabel,
+        title: this.displayTitle.length > 0 ? this.displayTitle : this.currentEpisode().title,
+        apiLabel: this.currentEpisode().apiLabel
       });
       this.progressBlock();
       PlayerControls({
@@ -109,6 +120,18 @@ export struct MainPlayerView {
   }
 
   @Builder
+  episodeIndicator() {
+    Row({ space: 4 }) {
+      ForEach(SAMPLE_EPISODES, (ep: Episode, idx: number) => {
+        Circle({ width: 5, height: 5 })
+          .fill(idx === this.episodeIdx ? this.currentEpisode().accentColor : '#D1D5DB');
+      }, (ep: Episode) => ep.id);
+    }
+    .justifyContent(FlexAlign.Center)
+    .width('100%');
+  }
+
+  @Builder
   artworkBlock() {
     Stack() {
       if (this.artwork !== null) {
@@ -119,12 +142,12 @@ export struct MainPlayerView {
           .objectFit(ImageFit.Cover);
       } else {
         Circle({ width: 44, height: 44 })
-          .fill('#1F6FEB')
+          .fill(this.currentEpisode().accentColor)
           .opacity(0.18);
         Text(this.currentEpisode().artworkLabel)
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1F6FEB');
+          .fontColor(this.currentEpisode().accentColor);
       }
     }
     .width(44)
@@ -166,12 +189,14 @@ export struct MainPlayerView {
     const ep: Episode = this.currentEpisode();
     this.isPlaying = false;
     this.isReady = false;
+    this.isLoading = true;
+    this.pendingPlay = false;
     this.elapsedMs = 0;
     this.durationMs = ep.fallbackDurationSec * 1000;
     this.artwork = null;
     this.displayTitle = ep.title;
-    this.displayArtist = ep.podcast;
     audioPlayerService.load(ep).catch(() => {
+      this.isLoading = false;
       this.showToast('Audio unavailable');
     });
   }
@@ -179,7 +204,11 @@ export struct MainPlayerView {
   private handleTogglePlay(): void {
     soundEffectService.play('tap');
     if (!this.isReady) {
-      this.showToast('Audio unavailable');
+      if (this.isLoading) {
+        this.pendingPlay = true;
+      } else {
+        this.showToast('Audio unavailable');
+      }
       return;
     }
     if (this.isPlaying) {
@@ -203,17 +232,23 @@ export struct MainPlayerView {
 
   private refreshMetadata(): void {
     const ep: Episode = this.currentEpisode();
+    const token: number = this.nextMetadataToken();
     metadataService.fetchFor(ep).then((meta: EpisodeMetadata) => {
+      if (token !== this.metadataToken || this.currentEpisode().id !== ep.id) {
+        return;
+      }
       if (meta.title.length > 0) {
         this.displayTitle = meta.title;
-      }
-      if (meta.artist.length > 0) {
-        this.displayArtist = meta.artist;
       }
       if (meta.durationMs > 0) {
         this.durationMs = meta.durationMs;
       }
       this.artwork = meta.artwork;
     });
+  }
+
+  private nextMetadataToken(): number {
+    this.metadataToken = this.metadataToken + 1;
+    return this.metadataToken;
   }
 }

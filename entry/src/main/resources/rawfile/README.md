@@ -9,10 +9,20 @@ common-event flow when they are absent.
 
 | File | Used by | Purpose |
 |---|---|---|
-| `sample_episode.mp3` | `AudioPlayerService`, `MetadataService` | Bundled podcast episode for the rawfile `AVFileDescriptor` path. `AVMetadataExtractor` also reads its title, duration, and album cover. |
+| `episode_machine_stops.mp3` | `AudioPlayerService`, `MetadataService` | Bundled offline episode for the rawfile `AVFileDescriptor` path. `AVMetadataExtractor` also reads its title, duration, and album cover. |
 | `sfx_tap.ogg` | `SoundEffectService` | Short tap feedback played on every button press. |
 | `sfx_skip.ogg` | `SoundEffectService` | Skip-forward / skip-back feedback. |
 | `sfx_chime.ogg` | `SoundEffectService` | Completion chime played when an episode ends. |
 
-Use any CC0 / royalty-free audio you like. Keep the sfx files under ~200 ms
-for the latency benefits SoundPool is designed for.
+Use any CC0 / royalty-free audio you like. Keep tap and skip effects very
+short for the latency benefits SoundPool is designed for; completion chimes can
+be slightly longer.
+
+## Bundled demo assets
+
+| File | Source |
+|---|---|
+| `episode_machine_stops.mp3` | 24-second excerpt from LibriVox "The Machine Stops" by E. M. Forster, public domain. |
+| `sfx_tap.ogg` | OpenGameArt "Beep Sound" by Test User, CC0. |
+| `sfx_skip.ogg` | OpenGameArt "Ping pong sounds" by Aj_, CC0. |
+| `sfx_chime.ogg` | OpenGameArt "Win Jingle" by Fupi, CC0. |

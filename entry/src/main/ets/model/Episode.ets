@@ -11,6 +11,9 @@ export class Episode {
   source: string;
   fallbackDurationSec: number;
   artworkLabel: string;
+  accentColor: string;
+  exampleLabel: string;
+  apiLabel: string;
 
   constructor(
     id: string,
@@ -19,7 +22,10 @@ export class Episode {
     sourceType: EpisodeSourceType,
     source: string,
     fallbackDurationSec: number,
-    artworkLabel: string
+    artworkLabel: string,
+    accentColor: string,
+    exampleLabel: string,
+    apiLabel: string
   ) {
     this.id = id;
     this.podcast = podcast;
@@ -28,23 +34,28 @@ export class Episode {
     this.source = source;
     this.fallbackDurationSec = fallbackDurationSec;
     this.artworkLabel = artworkLabel;
+    this.accentColor = accentColor;
+    this.exampleLabel = exampleLabel;
+    this.apiLabel = apiLabel;
   }
 }
 
-// First and third entries play from a bundled rawfile so the codelab works
-// offline on the simulator. The middle entry exercises the URL MediaSource
-// path; swap in a reachable public mp3 to demo real streaming.
+// Two episodes covering the two AVPlayer source paths the spec requires.
 export const SAMPLE_EPISODES: Episode[] = [
   new Episode(
-    'ep-01', 'HarmonyDev Daily', 'Common Events 101',
-    EpisodeSourceType.Rawfile, 'sample_episode.mp3', 312, 'CE'
+    'ep-01', 'Public Domain Sci-Fi', 'The Machine Stops',
+    EpisodeSourceType.Rawfile, 'episode_machine_stops.mp3', 24,
+    'MS', '#1F6FEB',
+    'Rawfile playback',
+    'AVFileDescriptor'
   ),
   new Episode(
-    'ep-02', 'Wearable Weekly', 'Streaming on the Wrist',
-    EpisodeSourceType.Url, 'https://example.com/streaming.mp3', 408, 'WW'
-  ),
-  new Episode(
-    'ep-03', 'HarmonyDev Daily', 'AVPlayer Deep Dive',
-    EpisodeSourceType.Rawfile, 'sample_episode.mp3', 276, 'AV'
+    'ep-02', 'Public Domain Sci-Fi', 'The Time Machine',
+    EpisodeSourceType.Url,
+    'https://ia902804.us.archive.org/13/items/timemachine_sjm_librivox/timemachine_01_wells_64kb.mp3',
+    1280,
+    'TM', '#8B5CF6',
+    'URL streaming',
+    'MediaSource'
   )
 ];
