@@ -2,31 +2,20 @@ import { commonEventManager } from '@kit.BasicServicesKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { AppConstants } from '../constants/AppConstants';
-import { PlaybackEvent } from '../model/PlaybackEvent';
 
 const DOMAIN: number = 0xCE01;
 const TAG: string = 'CommonEventService';
 
-export type EventListener = (event: PlaybackEvent) => void;
+export type SystemEventListener = (event: string, data: commonEventManager.CommonEventData) => void;
 
-// All BasicServicesKit common-event traffic for this app flows through this
-// service: subscribe, publish, unsubscribe, plus a tiny in-process fan-out so
-// multiple ArkUI components can react without each opening their own subscriber.
+// Thin wrapper around BasicServicesKit's commonEventManager. Subscribes to the
+// system events the codelab cares about (battery low / power connected /
+// connectivity change) and exposes a passthrough publish() for app-level
+// events. Other services register a SystemEventListener to react.
 export class CommonEventService {
   private subscriber: commonEventManager.CommonEventSubscriber | null = null;
-  private listeners: EventListener[] = [];
-  private nextEventId: number = 1;
+  private listeners: SystemEventListener[] = [];
   private initialized: boolean = false;
-  private eventLog: PlaybackEvent[] = [];
-
-  isReady(): boolean {
-    return this.initialized && this.subscriber !== null;
-  }
-
-  // Returns a defensive copy so ArkUI @State change detection sees a new array.
-  snapshotLog(): PlaybackEvent[] {
-    return this.eventLog.slice();
-  }
 
   init(): Promise<void> {
     if (this.initialized) {
@@ -34,15 +23,9 @@ export class CommonEventService {
     }
     const info: commonEventManager.CommonEventSubscribeInfo = {
       events: [
-        AppConstants.EVENT_PLAYBACK_STARTED,
-        AppConstants.EVENT_PLAYBACK_PAUSED,
-        AppConstants.EVENT_EPISODE_SKIPPED,
-        AppConstants.EVENT_EPISODE_COMPLETED,
-        AppConstants.EVENT_CACHE_READY,
-        AppConstants.EVENT_LOW_BATTERY,
-        AppConstants.EVENT_CELLULAR_READY,
         commonEventManager.Support.COMMON_EVENT_BATTERY_LOW,
-        commonEventManager.Support.COMMON_EVENT_POWER_CONNECTED
+        commonEventManager.Support.COMMON_EVENT_POWER_CONNECTED,
+        commonEventManager.Support.COMMON_EVENT_CONNECTIVITY_CHANGE
       ]
     };
     return new Promise<void>((resolve: () => void) => {
@@ -66,6 +49,8 @@ export class CommonEventService {
     });
   }
 
+  // Demonstrates the publish side of the pub/sub backbone with
+  // CommonEventPublishData. Used by AudioPlayerService when an episode ends.
   publish(eventName: string, detail: string): void {
     const params: Record<string, Object> = { 'detail': detail };
     const data: commonEventManager.CommonEventPublishData = {
@@ -84,13 +69,13 @@ export class CommonEventService {
     }
   }
 
-  addListener(listener: EventListener): void {
+  addSystemListener(listener: SystemEventListener): void {
     if (this.listeners.indexOf(listener) < 0) {
       this.listeners.push(listener);
     }
   }
 
-  removeListener(listener: EventListener): void {
+  removeSystemListener(listener: SystemEventListener): void {
     const idx: number = this.listeners.indexOf(listener);
     if (idx >= 0) {
       this.listeners.splice(idx, 1);
@@ -112,7 +97,6 @@ export class CommonEventService {
     }
     this.subscriber = null;
     this.listeners = [];
-    this.eventLog = [];
     this.initialized = false;
   }
 
@@ -136,36 +120,10 @@ export class CommonEventService {
   }
 
   private dispatch(data: commonEventManager.CommonEventData): void {
-    const name: string = data.event !== undefined ? data.event : 'unknown';
-    const detail: string = this.extractDetail(data);
-    const playback: PlaybackEvent = new PlaybackEvent(
-      `evt-${this.nextEventId}`,
-      name,
-      detail,
-      Date.now()
-    );
-    this.nextEventId = this.nextEventId + 1;
-    this.eventLog.unshift(playback);
-    if (this.eventLog.length > AppConstants.MAX_LOG_SIZE) {
-      this.eventLog.length = AppConstants.MAX_LOG_SIZE;
-    }
+    const name: string = data.event;
     for (let i = 0; i < this.listeners.length; i++) {
-      this.listeners[i](playback);
+      this.listeners[i](name, data);
     }
-  }
-
-  private extractDetail(data: commonEventManager.CommonEventData): string {
-    if (data.data !== undefined && data.data.length > 0) {
-      return data.data;
-    }
-    const params: Record<string, Object> | undefined = data.parameters;
-    if (params !== undefined) {
-      const v: Object | undefined = params['detail'];
-      if (v !== undefined) {
-        return `${v}`;
-      }
-    }
-    return '';
   }
 }
 

@@ -11,6 +11,18 @@
     {
       "name": "EntryAbility_label",
       "value": "Mini Podcast"
+    },
+    {
+      "name": "perm_internet_reason",
+      "value": "Stream podcast audio from the network"
+    },
+    {
+      "name": "perm_network_info_reason",
+      "value": "Detect Wi-Fi or cellular connection for adaptive streaming"
+    },
+    {
+      "name": "perm_background_reason",
+      "value": "Continue audio playback when the watch screen is off"
     }
   ]
 }

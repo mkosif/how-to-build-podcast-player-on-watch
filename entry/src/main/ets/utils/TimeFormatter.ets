@@ -1,4 +1,9 @@
 export class TimeFormatter {
+  static formatMs(totalMs: number): string {
+    const safeMs: number = totalMs < 0 ? 0 : totalMs;
+    return TimeFormatter.formatSeconds(Math.floor(safeMs / 1000));
+  }
+
   static formatSeconds(totalSec: number): string {
     const safe: number = totalSec < 0 ? 0 : Math.floor(totalSec);
     const minutes: number = Math.floor(safe / 60);

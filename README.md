@@ -1,69 +1,68 @@
 # Mini Podcast Player
 
-A wearable-first HarmonyOS codelab that demonstrates how to use **BasicServicesKit common events** as the pub/sub backbone of a real app. The sample is dressed up as a tiny watch podcast player, but the focus is the event flow: publishing playback intents, subscribing to app and system events, and reacting to them on a circular display without polling.
+A wearable HarmonyOS codelab that builds a watch podcast player from `media.AVPlayer`, `media.AVMetadataExtractor`, `media.SoundPool` and BasicServicesKit's `commonEventManager`. AVPlayer plays bundled rawfile episodes and URL-streamed episodes; AVMetadataExtractor pulls the title, duration and album cover; SoundPool gives every tap, skip and completion an instant audible response; and `commonEventManager` is the pub/sub bus that lets the watch react to system battery and connectivity events without polling.
 
-## Preview
+## Scenario
 
-<div>
+- **AVPlayer** drives playback. Rawfile episodes are loaded with `AVFileDescriptor`; URL episodes are loaded with `createMediaSourceWithUrl` and `setMediaSource`.
+- **AVMetadataExtractor** fills in episode metadata at runtime: `fetchMetadata` resolves the title / artist / duration, `fetchAlbumCover` returns a `PixelMap` for the artwork.
+- **SoundPool** is loaded once with three short clips (tap, skip, chime) and triggered via `play()` + `PlayParameters` for low-latency UI feedback.
+- **commonEventManager** is wired through `CommonEventService`:
+  - `createSubscriber` + `CommonEventSubscribeInfo` for `COMMON_EVENT_BATTERY_LOW`, `COMMON_EVENT_POWER_CONNECTED`, `COMMON_EVENT_CONNECTIVITY_CHANGE`.
+  - Subscribed `CommonEventData` is fanned out to in-process listeners.
+  - `commonEventManager.publish` with `CommonEventPublishData` broadcasts a single app-level `EPISODE_COMPLETED` event when an episode ends, so notifications, complications or future companion surfaces can subscribe.
+- **Offline caching**: rawfile episodes are bundled with the app and read via `resourceManager.getRawFd`, so playback works with no network.
+- **Background playback resumption**: the ability declares `backgroundModes: ["audioPlayback"]` and the `KEEP_BACKGROUND_RUNNING` permission, so AVPlayer keeps running when the watch screen sleeps.
+- **Adaptive streaming for cellular**: `ConnectivityService` reads the active bearer through `connection.getDefaultNetSync` / `getNetCapabilitiesSync` and adjusts `AudioPlayerService`'s `preferredBufferDuration` (5 s on Wi-Fi, 15 s on cellular). It re-runs on every `COMMON_EVENT_CONNECTIVITY_CHANGE`.
 
-The app boots into a compact watch face that shows the current episode, a progress bar, and a single primary play / pause control. Tapping the small "Events" button on the player opens a second screen — a live, scrollable feed of every `CommonEventData` record the app has received, including events the app itself published and any system events the device delivered.
+## How the pub/sub backbone is used
 
-</div>
+The codelab keeps the bus narrow on purpose. AVPlayer state, time updates, end-of-stream and error are delivered to the UI through direct listeners on `AudioPlayerService`. `commonEventManager` is used only where the spec needs it:
 
-## Use Cases
+- **Subscribe** to system events the watch should react to (battery, connectivity).
+- **Publish** the app-level `EPISODE_COMPLETED` event with `CommonEventPublishData`.
 
-- Drive playback state on a watch through `commonEventManager.publish` instead of direct method calls, so unrelated UI pieces can stay in sync.
-- Receive system signals such as battery low or power connected and translate them into wearable-friendly hints ("Streaming paused on low battery", "Cellular streaming ready").
-- Inspect the live stream of received `CommonEventData` records on a dedicated, scrollable monitor screen — useful when teaching pub/sub or debugging event wiring.
-- Use the project as a starting skeleton for any HarmonyOS wearable feature that needs decoupled, event-driven state propagation.
+This keeps high-frequency callbacks off the event bus while still exercising every target module (`commonEventManager`, `commonEventSubscriber`, `CommonEventSubscribeInfo`, `CommonEventData`, `CommonEventPublishData`).
 
-## Technology
-
-- **ArkTS / ArkUI** with `Navigation` and `NavPathStack` for screen flow (no `@ohos.router`).
-- **BasicServicesKit** common events:
-  - `commonEventManager.createSubscriber` with `CommonEventSubscribeInfo`
-  - `commonEventManager.subscribe` receiving `CommonEventData`
-  - `commonEventManager.publish` with `CommonEventPublishData`
-  - `commonEventManager.unsubscribe` for clean teardown
-- **HarmonyOS SDK**: `targetSdkVersion 6.0.2(22)` / `compatibleSdkVersion 6.0.0(20)`.
-- **Device target**: Wearable (Huawei Watch 5, DevEco Studio Simulator).
-- **Module**: `entry`, single ability `EntryAbility`, template "Empty Ability".
-
-## Directory Structure
+## Project layout
 
 ```
 entry/src/main/ets/
 ├── components/
-│   ├── EpisodeHeader.ets       // compact title block for the watch face
-│   ├── PlayerControls.ets      // skip-back / play-pause / skip-forward row
-│   ├── StatusPill.ets          // battery / network / cache chip
-│   └── EventLogList.ets        // scrollable list used by the monitor screen
-├── constants/
-│   └── AppConstants.ets        // event names, bundle name, tunables
-├── entryability/
-│   └── EntryAbility.ets        // boots the CommonEventService
-├── entrybackupability/
-│   └── EntryBackupAbility.ets
+│   ├── EpisodeHeader.ets         // podcast + title
+│   ├── MainPlayerView.ets        // artwork, progress, transport controls
+│   └── PlayerControls.ets        // skip / play-pause / skip
+├── constants/AppConstants.ets    // bundle name, event name, sfx assets, buffer hints
+├── entryability/EntryAbility.ets // boots and tears down every service
+├── entrybackupability/EntryBackupAbility.ets
 ├── model/
-│   ├── Episode.ets             // simulated podcast data
-│   └── PlaybackEvent.ets       // record stored in the event log
-├── pages/
-│   ├── Index.ets               // Navigation host + main player view
-│   └── EventMonitorPage.ets    // NavDestination for the event log
+│   ├── Episode.ets               // rawfile + URL source descriptors
+│   └── EpisodeMetadata.ets       // title / artist / durationMs / artwork
+├── pages/Index.ets               // @Entry, renders MainPlayerView
 ├── services/
-│   └── CommonEventService.ets  // publish/subscribe/unsubscribe wrapper
-└── utils/
-    └── TimeFormatter.ets       // mm:ss formatter
+│   ├── CommonEventService.ets    // commonEventManager subscribe + publish wrapper
+│   ├── AudioPlayerService.ets    // media.AVPlayer wrapper, listens to battery
+│   ├── MetadataService.ets       // media.AVMetadataExtractor wrapper
+│   ├── SoundEffectService.ets    // media.SoundPool wrapper
+│   └── ConnectivityService.ets   // NetworkKit → buffer strategy
+└── utils/TimeFormatter.ets       // mm:ss formatter
 ```
 
-## Constraints and Restrictions
+Bundled audio assets live in `entry/src/main/resources/rawfile/`. See that folder's README for the expected filenames.
 
-- HarmonyOS SDK: `targetSdkVersion 6.0.2(22)` and `compatibleSdkVersion 6.0.0(20)` — both as declared in `build-profile.json5`.
-- Wearable device type only; the layout is tuned for a circular display.
-- Navigation is implemented with `Navigation` + `NavPathStack`. The legacy `@ohos.router` API is intentionally not used.
-- All BasicServicesKit common-event work is wrapped in `services/CommonEventService.ets`. Subscriptions are released on ability destroy and on page disappear so the watch never leaks subscribers.
-- No network or sensitive runtime permissions are required. Real audio streaming is intentionally not implemented — the focus is the common-event pub/sub flow with simulated playback time.
-- No use of `Math.random()`; all IDs and demo values are deterministic.
+## Required permissions
+
+| Permission | Reason |
+|---|---|
+| `ohos.permission.INTERNET` | `media.AVPlayer` uses it when streaming a URL `MediaSource`. |
+| `ohos.permission.GET_NETWORK_INFO` | `ConnectivityService` reads the active bearer with `connection.getNetCapabilitiesSync`. |
+| `ohos.permission.KEEP_BACKGROUND_RUNNING` | Pairs with `backgroundModes: ["audioPlayback"]` so audio survives screen-off. |
+
+## Build target
+
+- `targetSdkVersion 6.0.0(20)` / `compatibleSdkVersion 6.0.0(20)` as declared in `build-profile.json5`.
+- Wearable device type only (Huawei Watch 5, DevEco Studio Simulator).
+- Single ability `EntryAbility`, Empty Ability template.
 
 ## License
 

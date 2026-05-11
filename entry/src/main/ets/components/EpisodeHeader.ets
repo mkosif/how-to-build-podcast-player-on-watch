@@ -2,22 +2,9 @@
 export struct EpisodeHeader {
   @Prop podcast: string = '';
   @Prop title: string = '';
-  @Prop artworkLabel: string = '';
 
   build() {
-    Column({ space: 6 }) {
-      Stack() {
-        Circle({ width: 56, height: 56 })
-          .fill('#1F6FEB')
-          .opacity(0.18);
-        Text(this.artworkLabel)
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#1F6FEB');
-      }
-      .width(56)
-      .height(56);
-
+    Column({ space: 4 }) {
       Text(this.podcast)
         .fontSize(11)
         .fontColor('#7A8595')
