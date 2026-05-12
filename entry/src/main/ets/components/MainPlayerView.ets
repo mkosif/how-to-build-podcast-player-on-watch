@@ -1,5 +1,4 @@
 import { image } from '@kit.ImageKit';
-import { promptAction } from '@kit.ArkUI';
 import { Episode, SAMPLE_EPISODES } from '../model/Episode';
 import { EpisodeMetadata } from '../model/EpisodeMetadata';
 import {
@@ -73,7 +72,11 @@ export struct MainPlayerView {
 
   private showToast(message: string): void {
     try {
-      promptAction.showToast({ message: message, duration: 2500, bottom: '12vp' });
+      this.getUIContext().getPromptAction().showToast({
+        message: message,
+        duration: 2500,
+        bottom: '12vp'
+      });
     } catch (_err) {
       // Toast surface is not available — silently drop; AVPlayer error is
       // already logged through hilog in AudioPlayerService.
@@ -107,6 +110,7 @@ export struct MainPlayerView {
       this.progressBlock();
       PlayerControls({
         isPlaying: this.isPlaying,
+        isReady: this.isReady,
         onTogglePlay: () => this.handleTogglePlay(),
         onSkipBack: () => this.handleSkipBack(),
         onSkipForward: () => this.handleSkipForward()

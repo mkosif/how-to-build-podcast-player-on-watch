@@ -224,17 +224,28 @@ export class AudioPlayerService {
     if (ctx === null) {
       throw new Error('AudioPlayerService: UIAbilityContext not bound');
     }
-    const fd: resourceManager.RawFileDescriptor = await ctx.resourceManager.getRawFd(name);
+    let fd: resourceManager.RawFileDescriptor;
+    try {
+      fd = await ctx.resourceManager.getRawFd(name);
+    } catch (err) {
+      const message: string = (err as BusinessError).message;
+      throw new Error(`getRawFd failed: ${message !== undefined ? message : 'unknown'}`);
+    }
     const avFd: media.AVFileDescriptor = { fd: fd.fd, offset: fd.offset, length: fd.length };
     player.fdSrc = avFd;
   }
 
   private applyUrlSource(player: media.AVPlayer, url: string): void {
-    const source: media.MediaSource = media.createMediaSourceWithUrl(url, {});
-    const strategy: media.PlaybackStrategy = {
-      preferredBufferDuration: this.bufferDurationSec
-    };
-    player.setMediaSource(source, strategy);
+    try {
+      const source: media.MediaSource = media.createMediaSourceWithUrl(url, {});
+      const strategy: media.PlaybackStrategy = {
+        preferredBufferDuration: this.bufferDurationSec
+      };
+      player.setMediaSource(source, strategy);
+    } catch (err) {
+      const message: string = (err as BusinessError).message;
+      throw new Error(`url source failed: ${message !== undefined ? message : 'unknown'}`);
+    }
   }
 
   private async disposePlayer(): Promise<void> {
