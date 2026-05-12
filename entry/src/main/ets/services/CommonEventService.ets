@@ -52,11 +52,9 @@ export class CommonEventService {
   // Demonstrates the publish side of the pub/sub backbone with
   // CommonEventPublishData. Used by AudioPlayerService when an episode ends.
   publish(eventName: string, detail: string): void {
-    const params: Record<string, Object> = { 'detail': detail };
     const data: commonEventManager.CommonEventPublishData = {
       bundleName: AppConstants.BUNDLE_NAME,
-      data: detail,
-      parameters: params
+      data: detail
     };
     try {
       commonEventManager.publish(eventName, data, (err: BusinessError) => {

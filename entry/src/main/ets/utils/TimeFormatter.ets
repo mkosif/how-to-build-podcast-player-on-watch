@@ -12,13 +12,4 @@ export class TimeFormatter {
     const ss: string = seconds < 10 ? `0${seconds}` : `${seconds}`;
     return `${mm}:${ss}`;
   }
-
-  static formatClock(timestampMs: number): string {
-    const date: Date = new Date(timestampMs);
-    const hh: number = date.getHours();
-    const mm: number = date.getMinutes();
-    const ss: number = date.getSeconds();
-    const pad = (n: number): string => (n < 10 ? `0${n}` : `${n}`);
-    return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
-  }
 }

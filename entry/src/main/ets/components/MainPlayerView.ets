@@ -17,9 +17,9 @@ export struct MainPlayerView {
   @State durationMs: number = 0;
   @State isPlaying: boolean = false;
   @State isReady: boolean = false;
-  @State isLoading: boolean = false;
   @State artwork: image.PixelMap | null = null;
   @State displayTitle: string = '';
+  private isLoading: boolean = false;
   private metadataToken: number = 0;
   private pendingPlay: boolean = false;
 
@@ -105,7 +105,8 @@ export struct MainPlayerView {
       EpisodeHeader({
         exampleLabel: this.currentEpisode().exampleLabel,
         title: this.displayTitle.length > 0 ? this.displayTitle : this.currentEpisode().title,
-        apiLabel: this.currentEpisode().apiLabel
+        apiLabel: this.currentEpisode().apiLabel,
+        eventLabel: 'CommonEvent: subscribe + publish'
       });
       this.progressBlock();
       PlayerControls({

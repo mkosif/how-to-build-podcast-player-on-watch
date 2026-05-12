@@ -40,7 +40,8 @@ export class Episode {
   }
 }
 
-// Two episodes covering the two AVPlayer source paths the spec requires.
+// Three examples: rawfile playback, URL streaming, then a second rawfile that
+// proves skip/reload switches to a distinct bundled asset.
 export const SAMPLE_EPISODES: Episode[] = [
   new Episode(
     'ep-01', 'Public Domain Sci-Fi', 'The Machine Stops',
@@ -57,5 +58,12 @@ export const SAMPLE_EPISODES: Episode[] = [
     'TM', '#8B5CF6',
     'URL streaming',
     'MediaSource'
+  ),
+  new Episode(
+    'ep-03', 'Adventure Classics', 'Everything through Electricity',
+    EpisodeSourceType.Rawfile, 'episode_electricity.mp3', 24,
+    'EL', '#10B981',
+    'Second offline asset',
+    'Metadata + album cover'
   )
 ];

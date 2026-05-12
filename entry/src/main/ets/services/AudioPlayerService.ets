@@ -1,4 +1,5 @@
 import { media } from '@kit.MediaKit';
+import { audio } from '@kit.AudioKit';
 import { commonEventManager, BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { common } from '@kit.AbilityKit';
@@ -186,6 +187,18 @@ export class AudioPlayerService {
       }
       this.handleEnded();
     });
+    player.on('audioInterrupt', (event: audio.InterruptEvent) => {
+      if (!this.isActivePlayer(player, token)) {
+        return;
+      }
+      this.handleAudioInterrupt(event);
+    });
+    player.on('audioOutputDeviceChangeWithInfo', (info: audio.AudioStreamDeviceChangeInfo) => {
+      if (!this.isActivePlayer(player, token)) {
+        return;
+      }
+      this.handleOutputDeviceChange(info);
+    });
   }
 
   private async handleStateChange(player: media.AVPlayer, token: number, state: string): Promise<void> {
@@ -216,6 +229,28 @@ export class AudioPlayerService {
     commonEventService.publish(AppConstants.EVENT_EPISODE_COMPLETED, title);
     for (let i = 0; i < this.endedListeners.length; i++) {
       this.endedListeners[i]();
+    }
+  }
+
+  private handleAudioInterrupt(event: audio.InterruptEvent): void {
+    const shouldPause: boolean = event.eventType === audio.InterruptType.INTERRUPT_TYPE_BEGIN
+      || event.hintType === audio.InterruptHint.INTERRUPT_HINT_PAUSE
+      || event.hintType === audio.InterruptHint.INTERRUPT_HINT_STOP
+      || event.hintType === audio.InterruptHint.INTERRUPT_HINT_MUTE;
+    if (shouldPause) {
+      this.pause().catch((err: Object) => {
+        hilog.warn(DOMAIN, TAG, 'interrupt pause failed: %{public}s', JSON.stringify(err));
+      });
+    }
+  }
+
+  private handleOutputDeviceChange(info: audio.AudioStreamDeviceChangeInfo): void {
+    const shouldPause: boolean = info.changeReason === audio.AudioStreamDeviceChangeReason.REASON_OLD_DEVICE_UNAVAILABLE
+      || info.changeReason === audio.AudioStreamDeviceChangeReason.REASON_OVERRODE;
+    if (shouldPause) {
+      this.pause().catch((err: Object) => {
+        hilog.warn(DOMAIN, TAG, 'device-change pause failed: %{public}s', JSON.stringify(err));
+      });
     }
   }
 
