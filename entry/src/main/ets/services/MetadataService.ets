@@ -9,9 +9,6 @@ import { EpisodeMetadata } from '../model/EpisodeMetadata';
 const DOMAIN: number = 0xCE03;
 const TAG: string = 'MetadataService';
 
-// Pulls title, duration and album cover from an episode source using
-// AVMetadataExtractor. Rawfile episodes use fdSrc; URL episodes fall back to
-// the static Episode fields because dataSrc streaming is out of scope.
 export class MetadataService {
   private context: common.UIAbilityContext | null = null;
 

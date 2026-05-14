@@ -127,9 +127,9 @@ export struct MainPlayerView {
   @Builder
   episodeIndicator() {
     Row({ space: 4 }) {
-      ForEach(SAMPLE_EPISODES, (ep: Episode, idx: number) => {
+      ForEach(SAMPLE_EPISODES, (ep: Episode) => {
         Circle({ width: 5, height: 5 })
-          .fill(idx === this.episodeIdx ? this.currentEpisode().accentColor : '#D1D5DB');
+          .fill(ep.id === this.currentEpisode().id ? this.currentEpisode().accentColor : '#D1D5DB');
       }, (ep: Episode) => ep.id);
     }
     .justifyContent(FlexAlign.Center)

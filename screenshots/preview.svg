@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420" role="img" aria-labelledby="title desc">
+  <title id="title">Podcast player watch preview</title>
+  <desc id="desc">A compact podcast player interface on a round wearable screen.</desc>
+  <rect width="640" height="420" fill="#f4f7fb"/>
+  <circle cx="320" cy="210" r="164" fill="#111827"/>
+  <circle cx="320" cy="210" r="148" fill="#f9fafb"/>
+  <circle cx="320" cy="126" r="34" fill="#1f6feb" opacity="0.16"/>
+  <text x="320" y="135" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#1f6feb">MP</text>
+  <text x="320" y="179" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#111827">Podcast Player</text>
+  <text x="320" y="204" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="#6b7280">AVPlayer + Metadata</text>
+  <rect x="228" y="229" width="184" height="8" rx="4" fill="#e6eefc"/>
+  <rect x="228" y="229" width="86" height="8" rx="4" fill="#1f6feb"/>
+  <circle cx="270" cy="280" r="22" fill="#eff6ff"/>
+  <polygon points="278,268 278,292 258,280" fill="#1f6feb"/>
+  <circle cx="320" cy="280" r="29" fill="#1f6feb"/>
+  <polygon points="312,264 312,296 336,280" fill="#ffffff"/>
+  <circle cx="370" cy="280" r="22" fill="#eff6ff"/>
+  <polygon points="362,268 362,292 382,280" fill="#1f6feb"/>
+</svg>
