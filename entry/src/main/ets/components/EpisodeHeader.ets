@@ -3,7 +3,6 @@ export struct EpisodeHeader {
   @Prop exampleLabel: string = '';
   @Prop title: string = '';
   @Prop apiLabel: string = '';
-  @Prop eventLabel: string = '';
 
   build() {
     Column({ space: 3 }) {
@@ -25,13 +24,6 @@ export struct EpisodeHeader {
         .fontSize(12)
         .fontWeight(FontWeight.Medium)
         .fontColor('#0E1116')
-        .textAlign(TextAlign.Center)
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis });
-
-      Text(this.eventLabel)
-        .fontSize(8)
-        .fontColor('#5A6472')
         .textAlign(TextAlign.Center)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis });

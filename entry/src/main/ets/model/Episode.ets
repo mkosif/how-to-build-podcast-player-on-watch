@@ -69,6 +69,6 @@ export const SAMPLE_EPISODES: Episode[] = [
     EpisodeSourceType.Rawfile, 'episode_electricity.mp3', 24,
     'EL', '#10B981',
     'Second offline asset',
-    'Metadata + album cover'
+    'AVMetadataExtractor'
   )
 ];

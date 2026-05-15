@@ -105,8 +105,7 @@ export struct MainPlayerView {
       EpisodeHeader({
         exampleLabel: this.currentEpisode().exampleLabel,
         title: this.displayTitle.length > 0 ? this.displayTitle : this.currentEpisode().title,
-        apiLabel: this.currentEpisode().apiLabel,
-        eventLabel: 'CommonEvent: subscribe + publish'
+        apiLabel: this.currentEpisode().apiLabel
       });
       this.progressBlock();
       PlayerControls({
