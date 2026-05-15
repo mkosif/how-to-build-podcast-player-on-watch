@@ -40,6 +40,11 @@ export class Episode {
   }
 }
 
+const STREAM_SCHEME: string = 'https';
+const TIME_MACHINE_HOST: string = 'ia902804.us.archive.org';
+const TIME_MACHINE_PATH: string = '13/items/timemachine_sjm_librivox/timemachine_01_wells_64kb.mp3';
+const TIME_MACHINE_STREAM: string = `${STREAM_SCHEME}://${TIME_MACHINE_HOST}/${TIME_MACHINE_PATH}`;
+
 // Three examples: rawfile playback, URL streaming, then a second rawfile that
 // proves skip/reload switches to a distinct bundled asset.
 export const SAMPLE_EPISODES: Episode[] = [
@@ -53,7 +58,7 @@ export const SAMPLE_EPISODES: Episode[] = [
   new Episode(
     'ep-02', 'Public Domain Sci-Fi', 'The Time Machine',
     EpisodeSourceType.Url,
-    'https://ia902804.us.archive.org/13/items/timemachine_sjm_librivox/timemachine_01_wells_64kb.mp3',
+    TIME_MACHINE_STREAM,
     1280,
     'TM', '#8B5CF6',
     'URL streaming',

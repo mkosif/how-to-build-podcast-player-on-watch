@@ -233,10 +233,11 @@ export class AudioPlayerService {
   }
 
   private handleAudioInterrupt(event: audio.InterruptEvent): void {
-    const shouldPause: boolean = event.eventType === audio.InterruptType.INTERRUPT_TYPE_BEGIN
-      || event.hintType === audio.InterruptHint.INTERRUPT_HINT_PAUSE
-      || event.hintType === audio.InterruptHint.INTERRUPT_HINT_STOP
-      || event.hintType === audio.InterruptHint.INTERRUPT_HINT_MUTE;
+    const isInterruptBegin: boolean = event.eventType === audio.InterruptType.INTERRUPT_TYPE_BEGIN;
+    const isPauseHint: boolean = event.hintType === audio.InterruptHint.INTERRUPT_HINT_PAUSE;
+    const isStopHint: boolean = event.hintType === audio.InterruptHint.INTERRUPT_HINT_STOP;
+    const isMuteHint: boolean = event.hintType === audio.InterruptHint.INTERRUPT_HINT_MUTE;
+    const shouldPause: boolean = isInterruptBegin || isPauseHint || isStopHint || isMuteHint;
     if (shouldPause) {
       this.pause().catch((err: Object) => {
         hilog.warn(DOMAIN, TAG, 'interrupt pause failed: %{public}s', JSON.stringify(err));
@@ -245,8 +246,10 @@ export class AudioPlayerService {
   }
 
   private handleOutputDeviceChange(info: audio.AudioStreamDeviceChangeInfo): void {
-    const shouldPause: boolean = info.changeReason === audio.AudioStreamDeviceChangeReason.REASON_OLD_DEVICE_UNAVAILABLE
-      || info.changeReason === audio.AudioStreamDeviceChangeReason.REASON_OVERRODE;
+    const isOldDeviceUnavailable: boolean =
+      info.changeReason === audio.AudioStreamDeviceChangeReason.REASON_OLD_DEVICE_UNAVAILABLE;
+    const isOverrode: boolean = info.changeReason === audio.AudioStreamDeviceChangeReason.REASON_OVERRODE;
+    const shouldPause: boolean = isOldDeviceUnavailable || isOverrode;
     if (shouldPause) {
       this.pause().catch((err: Object) => {
         hilog.warn(DOMAIN, TAG, 'device-change pause failed: %{public}s', JSON.stringify(err));
