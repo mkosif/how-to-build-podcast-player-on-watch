@@ -9,9 +9,9 @@ The app plays bundled rawfile episodes and URL-streamed episodes, extracts runti
 # Preview
 
 <div align="center">
-  <img src="./screenshots/preview_1.png" alt="Podcast player preview 1" width="24%" />
-  <img src="./screenshots/preview_2.png" alt="Podcast player preview 2" width="24%" />
-  <img src="./screenshots/preview_3.png" alt="Podcast player preview 3" width="24%" />
+  <img src="./screenshots/1.png" alt="Podcast player preview 1" width="25%" />
+  <img src="./screenshots/2.png" alt="Podcast player preview 2" width="25%" />
+  <img src="./screenshots/3.png" alt="Podcast player preview 3" width="25%" />
 </div>
 
 # Use Cases
