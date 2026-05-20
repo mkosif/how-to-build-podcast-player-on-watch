@@ -1,6 +1,6 @@
 # How To Build Podcast Player
 
-**How To Build Podcast Player** is a HarmonyOS wearable codelab that demonstrates how to build a compact podcast player for watches with `media.AVPlayer`, `media.AVMetadataExtractor`, `media.SoundPool`, and BasicServicesKit `commonEventManager`.
+**How To Build Podcast Player** (`how-to-build-podcast-player`) is a HarmonyOS wearable codelab that demonstrates how to build a compact podcast player for watches with `media.AVPlayer`, `media.AVMetadataExtractor`, `media.SoundPool`, and BasicServicesKit `commonEventManager`.
 
 The app plays bundled rawfile episodes and URL-streamed episodes, extracts runtime metadata and album artwork, gives low-latency sound feedback for player actions, and reacts to battery and connectivity events through a focused pub/sub backbone.
 
