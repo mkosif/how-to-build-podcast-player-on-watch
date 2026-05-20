@@ -1,6 +1,6 @@
 {
   "app": {
-    "bundleName": "com.hmosdemos.wearable.how_to_build_podcast_player_on_watch",
+    "bundleName": "com.hmosdemos.wearable.how_to_build_podcast_player",
     "vendor": "hmosdemos",
     "versionCode": 1000000,
     "versionName": "1.0.0",

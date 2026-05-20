@@ -1,6 +1,6 @@
 export class AppConstants {
   static readonly BUNDLE_NAME: string =
-    'com.hmosdemos.wearable.how_to_build_podcast_player_on_watch';
+    'com.hmosdemos.wearable.how_to_build_podcast_player';
 
   // Single app-level event the codelab publishes through commonEventManager,
   // exercising CommonEventPublishData. Companion surfaces (notifications,

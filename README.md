@@ -1,8 +1,6 @@
-# how-to-build-podcast-player-on-watch
+# How To Build Podcast Player
 
-> **Note:** To access all shared projects, get information about environment setup, and view other guides, please visit [Explore-In-HMOS-Wearable Index](https://github.com/Explore-In-HMOS-Wearable/hmos-index).
-
-**how-to-build-podcast-player-on-watch** is a HarmonyOS wearable codelab that demonstrates how to build a compact podcast player for watches with `media.AVPlayer`, `media.AVMetadataExtractor`, `media.SoundPool`, and BasicServicesKit `commonEventManager`.
+**How To Build Podcast Player** is a HarmonyOS wearable codelab that demonstrates how to build a compact podcast player for watches with `media.AVPlayer`, `media.AVMetadataExtractor`, `media.SoundPool`, and BasicServicesKit `commonEventManager`.
 
 The app plays bundled rawfile episodes and URL-streamed episodes, extracts runtime metadata and album artwork, gives low-latency sound feedback for player actions, and reacts to battery and connectivity events through a focused pub/sub backbone.
 
@@ -26,6 +24,8 @@ The app plays bundled rawfile episodes and URL-streamed episodes, extracts runti
 - **Adaptive buffering**: Adjust the preferred buffer duration for Wi-Fi and cellular connections with NetworkKit.
 
 # Technology
+
+## Stack
 
 - **Languages**: ArkTS / ArkUI
 - **Frameworks**: HarmonyOS SDK 6.0.0(20)
@@ -89,7 +89,7 @@ Bundled audio assets live in `entry/src/main/resources/rawfile/`.
 - Empty Ability template
 - Wearable device family only
 
-# LICENSE
+# License
 
-**how-to-build-podcast-player-on-watch** is distributed under the terms of the MIT License.
+**How To Build Podcast Player** is distributed under the terms of the MIT License.
 See the [LICENSE](/LICENSE) for more information.
